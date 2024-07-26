@@ -1,0 +1,36 @@
+name: CMake
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        static: [ON, OFF]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: libsdl-org/setup-sdl@main
+        id: sdl
+        with:
+          install-linux-dependencies: true
+          version: 2-latest
+      - uses: seanmiddleditch/gha-setup-ninja@master
+      - uses: swift-actions/setup-swift@v2
+
+      - name: Set reusable strings
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+      - name: Build LINK_STATIC=${{ matrix.static }}
+        run: make run LINK_STATIC=${{ matrix.static }}
